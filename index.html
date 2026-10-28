@@ -1,0 +1,142 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>FoodPass – Pay, Scan, Eat</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<style>
+:root{--bg:#fffdf5;--ink:#111;--card:#fff;--g:#1faa59;--au:#f0b92b;--b:#2f7bff;--ac:var(--g);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10130f;--ink:#f5f1e6;--card:#1b1f19}}
+:root[data-theme="dark"]{--bg:#10130f;--ink:#f5f1e6;--card:#1b1f19}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:'Fredoka',system-ui,sans-serif;background-image:radial-gradient(circle at 12% 8%,color-mix(in srgb,var(--ac) 30%,transparent),transparent 40%),radial-gradient(circle at 90% 90%,color-mix(in srgb,var(--au) 25%,transparent),transparent 40%);transition:background .6s}
+body[data-page=home],body[data-page=tickets],body[data-page=contact]{--ac:var(--g)}
+body[data-page=menu],body[data-page=feedback],body[data-page=login],body[data-page=vendor]{--ac:var(--au)}
+body[data-page=cart],body[data-page=about],body[data-page=game]{--ac:var(--b)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:#111;border-bottom:4px solid var(--ac);display:flex;align-items:center;gap:6px;padding:8px 12px;overflow-x:auto}
+header b{color:var(--au);font-size:1.3rem;margin-right:8px;white-space:nowrap}
+header button{font:inherit;font-weight:600;background:none;border:0;color:#fff;padding:6px 12px;border-radius:12px;cursor:pointer;white-space:nowrap;transition:.2s}
+header button:hover,header button.on{background:var(--ac);color:#111;transform:translateY(-2px)}
+main{max-width:980px;margin:0 auto;padding:18px 14px 90px}
+main>*{animation:pop .5s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes pop{from{opacity:0;transform:translateY(18px) scale(.97)}}
+@keyframes bob{50%{transform:translateY(-10px) rotate(6deg)}}
+.card{background:var(--card);border:3px solid var(--ink);border-radius:20px;box-shadow:0 7px 0 var(--ink);padding:16px;margin:0 0 20px;transition:transform .25s cubic-bezier(.3,1.6,.5,1),box-shadow .25s}
+.card:hover{transform:translateY(-4px) rotate(-.4deg);box-shadow:0 11px 0 var(--ink)}
+.hero{background:var(--ac);color:#111;text-align:center;padding:28px 16px}
+.hero h1{font-size:clamp(2rem,7vw,3.4rem);margin:4px 0;text-shadow:3px 3px 0 #fff}
+.hero .e{font-size:3rem;display:inline-block;animation:bob 2.5s infinite}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.btn{font:inherit;font-weight:700;background:var(--ac);color:#111;border:3px solid var(--ink);border-radius:14px;padding:9px 16px;box-shadow:0 5px 0 var(--ink);cursor:pointer;transition:.15s;margin:4px 4px 8px 0}
+.btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--ink)}
+.btn:active{transform:translateY(5px);box-shadow:0 0 0 var(--ink)}
+.btn.k{background:#111;color:var(--au)}.btn.w{background:#fff}.btn.sm{padding:3px 12px}
+input,select,textarea{font:inherit;width:100%;padding:10px;border:3px solid var(--ink);border-radius:12px;background:var(--card);color:var(--ink);margin:4px 0 10px}
+h2{margin:6px 0 12px;border-bottom:5px solid var(--ac);display:inline-block}
+.price{font-weight:700;color:var(--g);font-size:1.2rem}
+.tag{display:inline-block;background:var(--ac);color:#111;border:2px solid var(--ink);border-radius:99px;padding:1px 10px;font-size:.8rem;font-weight:700}
+.qr{background:#fff;padding:10px;border:3px solid #111;border-radius:14px;display:inline-block;position:relative}
+.used{position:absolute;inset:0;display:grid;place-items:center;background:#fffe;color:#d22;font-size:1.6rem;font-weight:700;transform:rotate(-12deg)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.ico{font-size:4rem;cursor:pointer;text-align:center;user-select:none}.ico:hover .e2{transform:scale(1.2) rotate(-8deg)}.e2{display:inline-block;transition:.3s cubic-bezier(.3,1.8,.5,1)}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{border-bottom:2px solid var(--ink);padding:6px 8px;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}
+.bar{height:14px;background:var(--ac);border:2px solid var(--ink);border-radius:9px}
+.hole{aspect-ratio:1;font-size:2.4rem;background:#111;border:3px solid var(--ac);border-radius:50%;cursor:pointer;color:#fff;transition:.1s}
+#modal{position:fixed;inset:0;background:#000a;display:none;place-items:center;z-index:20;padding:14px}#modal.on{display:grid}
+#ai{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:15}
+#ai .fab{width:60px;height:60px;border-radius:50%;font-size:1.8rem;background:#111;border:3px solid var(--au);box-shadow:0 5px 0 var(--au);cursor:pointer}
+#chat{display:none;width:min(340px,86vw);margin-bottom:12px}#chat.on{display:block}#msgs{height:230px;overflow:auto}
+.m{padding:6px 10px;margin:5px 0;border-radius:12px;border:2px solid var(--ink);max-width:88%}.m.u{background:var(--b);color:#fff;margin-left:auto}.m.a{background:var(--card)}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#111;color:var(--au);padding:10px 18px;border-radius:14px;border:2px solid var(--au);z-index:30;display:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body data-page="home">
+<header id="nav"></header><main id="app"></main>
+<div id="modal"></div><div id="toast"></div>
+<div id="ai"><div id="chat" class="card"><b>🤖 FoodPass Helper</b><div id="msgs"><div class="m a">Hi! Ask me about prices, dishes, how QR works, payments… 🍛</div></div><input id="q" placeholder="Type & press Enter" onkeydown="if(event.key==='Enter')ask()"></div><button class="fab" onclick="$('#chat').classList.toggle('on')">🤖</button></div>
+<script>
+const $=s=>document.querySelector(s),esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mem={},ld=(k,d)=>{try{const v=localStorage.getItem(k);if(v)return JSON.parse(v)}catch(e){}return mem[k]??d},sv=(k,v)=>{mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const fmt=n=>'₹'+n.toFixed(2),pad=n=>String(n).padStart(2,'0');
+const now=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2800)};
+const VENDOR={name:'Spice & Co. Food Counter',hours:'8:00 AM – 10:00 PM',phone:'+91 90000 00000',mail:'hello@spiceandco.example',addr:'Main Road, Muvattupuzha, Kerala'};
+const M=[{c:'Snacks',i:'🍟',x:[['Masala Fries',60,'Crispy fries tossed in spicy masala.'],['Veg Samosa (2)',30,'Golden pastry stuffed with spiced potato.'],['Paneer Roll',90,'Soft paratha rolled with grilled paneer.']]},
+{c:'Meals',i:'🍛',x:[['Veg Biriyani',120,'Fragrant basmati rice with vegetables and raita.'],['Kerala Meals',110,'Rice with sambar, thoran, pickle and papadam.'],['Chicken Fried Rice',140,'Wok-tossed rice with chicken and egg.']]},
+{c:'Drinks',i:'🥤',x:[['Masala Chai',15,'Hot milk tea with ginger and cardamom.'],['Fresh Lime Soda',35,'Sweet-salt lime fizz, very refreshing.'],['Mango Shake',70,'Thick shake of ripe mangoes and milk.']]},
+{c:'Desserts',i:'🍨',x:[['Gulab Jamun (2)',40,'Soft milk dumplings in rose sugar syrup.'],['Payasam',50,'Creamy Kerala sweet with vermicelli and nuts.'],['Ice Cream Scoop',45,'Vanilla, chocolate or strawberry scoop.']]}];
+const ALL=M.flatMap(g=>g.x.map(x=>({n:x[0],p:x[1],d:x[2],c:g.c,i:g.i})));
+const S={page:'home',cart:{},role:ld('fq_role',null),name:ld('fq_name','Guest'),am:'month',vt:'orders'};
+let stream=null,gi=null,gt=null;
+/* ---------- crypto (AES-256-GCM) ---------- */
+const b64=u=>btoa(String.fromCharCode(...u)),ub=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function key(){let j=ld('fq_k',null);if(j)return crypto.subtle.importKey('jwk',j,'AES-GCM',true,['encrypt','decrypt']);const k=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);sv('fq_k',await crypto.subtle.exportKey('jwk',k));return k}
+async function enc(o){const iv=crypto.getRandomValues(new Uint8Array(12)),c=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},await key(),new TextEncoder().encode(JSON.stringify(o))));return b64(new Uint8Array([...iv,...c]))}
+async function dec(s){const u=ub(s.trim());return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:u.slice(0,12)},await key(),u.slice(12))))}
+async function sha(s){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,14)}
+/* ---------- routing ---------- */
+const NAV=[['home','🏠 Home'],['menu','🍽️ Menu'],['cart','🛒 Cart'],['tickets','🎟️ Tickets'],['about','ℹ️ About'],['contact','📞 Contact'],['feedback','💬 Feedback'],['game','🎮 Game']];
+function go(p){stopCam();clearInterval(gi);clearInterval(gt);const need={menu:'customer',cart:'customer',tickets:'customer',vendor:'vendor'}[p];if(need&&S.role!==need){toast('Please login as '+need);p='login'}S.page=p;document.body.dataset.page=p;scrollTo(0,0);draw()}
+function draw(){const n=Object.values(S.cart).reduce((a,b)=>a+b,0);$('#nav').innerHTML='<b>🍔 FoodPass</b>'+NAV.map(([k,l])=>`<button class="${S.page===k?'on':''}" onclick="go('${k}')">${l}${k==='cart'&&n?' ('+n+')':''}</button>`).join('')+(S.role==='vendor'?`<button onclick="go('vendor')">🏪 Dashboard</button>`:'')+(S.role?`<button onclick="logout()">🚪 Logout</button>`:`<button class="on" onclick="go('login')">🔑 Login</button>`);
+$('#app').innerHTML=P[S.page]();(H[S.page]||(()=>{}))()}
+const logout=()=>{S.role=null;sv('fq_role',null);S.cart={};go('home')};
+/* ---------- pages ---------- */
+const P={
+home:()=>`<div class="card hero"><span class="e">🍔</span><h1>Pay. Scan. Eat.</h1><p>Order at the counter, pay with GPay or card, and get a one-time QR ticket.</p><button class="btn k" onclick="go('menu')">Order now</button><button class="btn w" onclick="go('game')">Play a game 🎮</button></div>
+<div class="grid"><div class="card"><h2>1️⃣ Order & Pay</h2><p>Pick food, pay securely through Razorpay (GPay / card).</p></div><div class="card"><h2>2️⃣ Get your QR</h2><p>An AES-256 encrypted ticket is created for your order.</p></div><div class="card"><h2>3️⃣ Eat & expire</h2><p>When food is served, the QR is scanned and dies forever.</p></div></div>
+<div class="card"><h2>⭐ Today's picks</h2><div class="grid">${ALL.filter((_,i)=>i%4==0).map(x=>`<div>${x.i} <b>${x.n}</b><br><span class="price">₹${x.p}</span></div>`).join('')}</div></div>`,
+menu:()=>M.map(g=>`<h2>${g.i} ${g.c}</h2><div class="grid">${g.x.map(x=>{const i=ALL.findIndex(a=>a.n===x[0]),q=S.cart[i]||0;return `<div class="card"><div style="font-size:2.4rem">${g.i}</div><b>${x[0]}</b><p style="margin:4px 0">${x[2]}</p><span class="price">₹${x[1]}</span><div><button class="btn sm" onclick="chg(${i},-1)">−</button> <b>${q}</b> <button class="btn sm" onclick="chg(${i},1)">+</button></div></div>`}).join('')}</div>`).join(''),
+cart:()=>{const e=Object.entries(S.cart).filter(x=>x[1]>0);return `<h2>🛒 Your cart</h2><div class="card">${e.length?e.map(([i,q])=>`<p>${ALL[i].n} × ${q} <b style="float:right">₹${ALL[i].p*q}</b></p>`).join('')+`<hr><p>Total (incl. 5% GST) <b class="price" style="float:right">${fmt(tot())}</b></p><button class="btn" onclick="pay()">💳 Pay with Razorpay</button>`:'Cart is empty. <button class="btn sm" onclick="go(\'menu\')">Browse menu</button>'}</div>`},
+tickets:()=>{const o=ld('fq_o',[]).filter(x=>x.cust===S.name).reverse();return `<h2>🎟️ My tickets</h2>`+(o.length?o.map(x=>`<div class="card"><span class="tag">${x.status==='served'?'USED':'VALID'}</span> <b>#${x.id}</b> · ${x.time}<p>${x.items.map(i=>i.n+' ×'+i.q).join(', ')} — <b>${fmt(x.total)}</b></p><div class="qr"><div id="q_${x.id}"></div>${x.status==='served'?'<div class="used">USED</div>':''}</div><p>Manual code: <b>${x.id}</b></p></div>`).join(''):`<div class="card">No tickets yet.</div>`)},
+vendor:()=>{const o=ld('fq_o',[]);return `<h2>🏪 Vendor dashboard</h2><div class="tabs"><button class="btn ${S.vt==='orders'?'k':''}" onclick="S.vt='orders';draw()">Orders</button><button class="btn ${S.vt==='books'?'k':''}" onclick="S.vt='books';draw()">Accounts</button></div>`+(S.vt==='orders'?ordersV(o):books(o))},
+about:()=>`<div class="card hero"><h1>About ${VENDOR.name}</h1></div><div class="card"><p>We serve fresh, hot food with zero queue confusion. Every paid order gets a one-time encrypted QR so nobody is served twice and every rupee is tracked.</p><p>🕗 ${VENDOR.hours}<br>📍 ${VENDOR.addr}</p></div><div class="grid">${M.map(g=>`<div class="card">${g.i} <b>${g.c}</b><br>From ₹${Math.min(...g.x.map(x=>x[1]))}</div>`).join('')}</div>`,
+contact:()=>`<h2>📞 Contact</h2><div class="card"><p>📱 ${VENDOR.phone}</p><p>✉️ ${VENDOR.mail}</p><p>📍 ${VENDOR.addr}</p><p>🕗 ${VENDOR.hours}</p></div>`,
+feedback:()=>{const f=ld('fq_f',[]).slice(-6).reverse();return `<h2>💬 Review · Suggestion · Complaint</h2><div class="card"><select id="ft"><option>⭐ Review</option><option>💡 Suggestion</option><option>⚠️ Complaint</option></select><textarea id="fm" rows="3" placeholder="Tell us…"></textarea><button class="btn" onclick="sendF()">Submit</button></div>${f.map(x=>`<div class="card"><span class="tag">${esc(x.t)}</span> <small>${x.time} · ${esc(x.n)}</small><p>${esc(x.m)}</p></div>`).join('')}`},
+game:()=>`<h2>🎮 Snack Smash</h2><div class="card"><p>Tap food 🍔🍕🍩 (+1). Avoid bombs 💣 (−2). 20 seconds!</p><p>Score <b id="sc">0</b> · Time <b id="tm">20</b> · Best <b id="bs">${ld('fq_best',0)}</b></p><button class="btn" onclick="gstart()">Start</button><div class="grid" style="grid-template-columns:repeat(3,1fr);max-width:340px">${[...Array(9)].map((_,i)=>`<button class="hole" id="h${i}" onclick="hit(${i})"></button>`).join('')}</div></div>`,
+login:()=>`<div class="card hero"><h1>Welcome 👋</h1><p>Tap an icon to continue</p></div><div class="grid"><div class="card"><div class="ico" onclick="login('customer')"><span class="e2">🧑‍🍳</span><br><b style="font-size:1.2rem">I'm a Customer</b></div><input id="ln" placeholder="Your name" value="${S.name==='Guest'?'':esc(S.name)}"></div><div class="card"><div class="ico" onclick="login('vendor')"><span class="e2">🏪</span><br><b style="font-size:1.2rem">I'm the Vendor</b></div><input id="lp" type="password" placeholder="Vendor PIN (demo: 1234)"></div></div>`};
+const H={tickets:async()=>{for(const x of ld('fq_o',[]).filter(x=>x.cust===S.name&&x.status!=='served')){const el=$('#q_'+x.id);if(el)new QRCode(el,{text:await enc({id:x.id,t:x.total,n:Date.now()}),width:170,height:170,correctLevel:QRCode.CorrectLevel.L})}
+for(const x of ld('fq_o',[]).filter(x=>x.cust===S.name&&x.status==='served')){const el=$('#q_'+x.id);if(el)el.style.cssText='width:170px;height:170px'}}};
+/* ---------- customer actions ---------- */
+const tot=()=>Object.entries(S.cart).reduce((a,[i,q])=>a+ALL[i].p*q,0);
+const chg=(i,d)=>{S.cart[i]=Math.max(0,(S.cart[i]||0)+d);draw()};
+function login(r){if(r==='vendor'){if($('#lp').value!=='1234')return toast('Wrong PIN');}else{S.name=($('#ln').value||'Guest').trim().slice(0,30);sv('fq_name',S.name)}S.role=r;sv('fq_role',r);go(r==='vendor'?'vendor':'menu')}
+function pay(){$('#modal').innerHTML=`<div class="card" style="max-width:380px;width:100%"><b style="color:var(--b)">🔒 Razorpay Secure (test mode)</b><h2>${fmt(tot())}</h2><div class="tabs"><button class="btn sm" onclick="pm='upi';payF()">GPay / UPI</button><button class="btn sm" onclick="pm='card';payF()">Card</button></div><div id="pf"></div></div>`;$('#modal').classList.add('on');pm='upi';payF()}
+let pm='upi';
+function payF(){$('#pf').innerHTML=(pm==='upi'?'<input id="f1" placeholder="UPI ID e.g. name@okaxis">':'<input id="f1" inputmode="numeric" placeholder="Card number (16 digits)"><input id="f2" placeholder="MM/YY"><input id="f3" type="password" placeholder="CVV">')+`<button class="btn" onclick="doPay()">Pay ${fmt(tot())}</button><button class="btn w" onclick="$('#modal').classList.remove('on')">Cancel</button>`}
+async function doPay(){const a=$('#f1').value.trim();if(pm==='upi'?!/^[\w.-]+@\w+$/.test(a):!(/^\d{16}$/.test(a.replace(/\s/g,''))&&/^\d\d\/\d\d$/.test($('#f2').value)&&/^\d{3}$/.test($('#f3').value)))return toast('Check payment details');
+$('#pf').innerHTML='<p>⏳ Processing via Razorpay…</p>';await new Promise(r=>setTimeout(r,1200));
+const id='FP'+Date.now().toString(36).toUpperCase(),pid='pay_'+Math.random().toString(36).slice(2,16),total=tot(),items=Object.entries(S.cart).filter(x=>x[1]>0).map(([i,q])=>({n:ALL[i].n,p:ALL[i].p,q}));
+const o=ld('fq_o',[]);o.push({id,pid,cust:S.name,items,total,method:pm==='upi'?'GPay/UPI':'Card',time:now(),status:'paid',hash:await sha(id+pid+total)});sv('fq_o',o);S.cart={};$('#modal').classList.remove('on');toast('✅ Payment successful');go('tickets')}
+function sendF(){const m=$('#fm').value.trim();if(!m)return toast('Write something first');const f=ld('fq_f',[]);f.push({t:$('#ft').value,m:m.slice(0,500),n:S.name,time:now()});sv('fq_f',f);toast('Thank you!');draw()}
+/* ---------- vendor ---------- */
+function ordersV(o){const p=o.filter(x=>x.status==='paid').reverse();return `<div class="card"><h2>📷 Scan to serve</h2><p>Customer shows QR → scan → ticket expires.</p><button class="btn" onclick="scan()">Start camera</button><button class="btn w" onclick="stopCam()">Stop</button><video id="vid" playsinline muted style="width:100%;max-width:320px;border-radius:14px;display:none"></video><input id="cd" placeholder="Or paste QR text / type order ID"><button class="btn k" onclick="verify($('#cd').value)">Verify & serve</button><div id="res"></div></div><h2>⏳ To serve (${p.length})</h2>${p.map(x=>`<div class="card"><b>#${x.id}</b> · ${x.time} · ${esc(x.cust)}<p>${x.items.map(i=>i.n+' ×'+i.q+' (₹'+i.p*i.q+')').join(', ')}</p><b>${fmt(x.total)}</b> · ${x.method}<br><button class="btn" onclick="serve('${x.id}')">✅ Mark served</button></div>`).join('')||'<div class="card">Nothing pending 🎉</div>'}`}
+function serve(id){const o=ld('fq_o',[]),x=o.find(a=>a.id===id);if(!x||x.status==='served')return false;x.status='served';x.served=now();sv('fq_o',o);draw();return x}
+async function verify(c){c=c.trim();let id;try{id=c.length<16?c.toUpperCase():(await dec(c)).id}catch(e){return res('❌ Invalid or tampered code',1)}
+const x=ld('fq_o',[]).find(a=>a.id===id);if(!x)return res('❌ Order not found',1);if(x.status==='served')return res('⛔ Already used at '+x.served,1);serve(id);res(`✅ Served #${id}: ${x.items.map(i=>i.n+' ×'+i.q).join(', ')} — ${fmt(x.total)}`)}
+function res(m,bad){const e=$('#res');if(e){e.innerHTML=`<div class="card" style="border-color:${bad?'#d22':'var(--g)'}">${esc(m)}</div>`}}
+async function scan(){const v=$('#vid');try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})}catch(e){return toast('Camera unavailable – paste the code instead')}
+v.style.display='block';v.srcObject=stream;v.play();const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});const t=()=>{if(!stream)return;if(v.readyState===4){c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);const d=x.getImageData(0,0,c.width,c.height),r=jsQR(d.data,c.width,c.height);if(r){stopCam();verify(r.data);return}}requestAnimationFrame(t)};t()}
+function stopCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}const v=$('#vid');if(v)v.style.display='none'}
+function books(o){const k=S.am==='year'?x=>x.time.slice(0,4):x=>x.time.slice(0,7),g={};o.forEach(x=>{const a=g[k(x)]??={n:0,t:0};a.n++;a.t+=x.total});
+const cl=t=>{const gst=t*5/105,fee=t*.02,fg=fee*.18;return{gst,fee:fee+fg,net:t-fee-fg}},keys=Object.keys(g).sort().reverse(),T=o.reduce((a,x)=>a+x.total,0),mx=Math.max(1,...keys.map(a=>g[a].t)),c=cl(T);
+return `<div class="card"><div class="tabs"><button class="btn ${S.am==='month'?'k':''}" onclick="S.am='month';draw()">Monthly</button><button class="btn ${S.am==='year'?'k':''}" onclick="S.am='year';draw()">Yearly</button></div>
+<div class="grid"><div><small>Gross collected</small><div class="price">${fmt(T)}</div></div><div><small>GST (5%, incl.)</small><div class="price">${fmt(c.gst)}</div></div><div><small>Razorpay fee 2% + 18% GST</small><div class="price">${fmt(c.fee)}</div></div><div><small>Net payout to you</small><div class="price">${fmt(c.net)}</div></div></div></div>
+<div class="card tw"><h2>${S.am==='year'?'Yearly':'Monthly'} summary</h2><table><tr><th>Period</th><th>Orders</th><th>Gross</th><th>GST</th><th>Fees</th><th>Net</th><th></th></tr>${keys.map(a=>{const d=cl(g[a].t);return `<tr><td>${a}</td><td>${g[a].n}</td><td>${fmt(g[a].t)}</td><td>${fmt(d.gst)}</td><td>${fmt(d.fee)}</td><td><b>${fmt(d.net)}</b></td><td style="width:120px"><div class="bar" style="width:${g[a].t/mx*100}%"></div></td></tr>`}).join('')||'<tr><td>No data</td></tr>'}</table></div>
+<div class="card tw"><h2>Transaction ledger</h2><table><tr><th>Time</th><th>Order</th><th>Payment ID</th><th>Method</th><th>Items</th><th>Amount</th><th>Status</th><th>Hash</th></tr>${[...o].reverse().map(x=>`<tr><td>${x.time}</td><td>${x.id}</td><td>${x.pid}</td><td>${x.method}</td><td>${esc(x.items.map(i=>i.n+'×'+i.q).join(', '))}</td><td>${fmt(x.total)}</td><td>${x.status}</td><td>${x.hash}</td></tr>`).join('')}</table></div>`}
+/* ---------- game ---------- */
+let sc=0,tl=0;
+function gstart(){clearInterval(gi);clearInterval(gt);sc=0;tl=20;$('#sc').textContent=0;$('#tm').textContent=20;gi=setInterval(()=>{for(let i=0;i<9;i++)$('#h'+i).textContent='';$('#h'+Math.floor(Math.random()*9)).textContent=['🍔','🍕','🍩','💣'][Math.floor(Math.random()*4)]},650);gt=setInterval(()=>{$('#tm').textContent=--tl;if(tl<=0){clearInterval(gi);clearInterval(gt);const b=Math.max(sc,ld('fq_best',0));sv('fq_best',b);$('#bs').textContent=b;toast('Game over! Score '+sc)}},1000)}
+function hit(i){if(tl<=0)return;const h=$('#h'+i),t=h.textContent;if(!t)return;sc+=t==='💣'?-2:1;h.textContent='';$('#sc').textContent=sc}
+/* ---------- helper assistant ---------- */
+function reply(q){q=q.toLowerCase();const it=ALL.find(x=>x.n.toLowerCase().split(' (')[0].split(' ').filter(w=>w.length>3).some(w=>q.includes(w)));
+if(it&&!/menu|categor/.test(q))return `${it.i} ${it.n}: ${it.d} Price ₹${it.p} (${it.c}).`;
+if(/menu|categor|food|what do you (have|serve)/.test(q))return M.map(g=>g.i+' '+g.c+': '+g.x.map(x=>x[0]+' ₹'+x[1]).join(', ')).join(' | ');
+if(/how|work|qr|barcode|scan|use/.test(q))return 'Login → pick food → pay with GPay/card → get an encrypted QR in Tickets. The vendor scans it (or taps "Mark served") when food is handed over, and the QR becomes invalid.';
+if(/pay|gpay|upi|card|razorpay|money/.test(q))return 'Payments go through Razorpay by GPay/UPI or card. Prices include 5% GST.';
+if(/gst|tax/.test(q))return 'All prices include 5% GST. The vendor’s Accounts tab shows GST separately.';
+if(/complain|suggest|review|feedback|problem/.test(q))return 'Open the Feedback page to send a review, suggestion or complaint.';
+if(/contact|phone|time|open|hour|address/.test(q))return `${VENDOR.hours} · ${VENDOR.phone} · ${VENDOR.addr}`;
+if(/game|play|bored/.test(q))return 'Try Snack Smash on the Game page 🎮';
+if(/cheap|low|budget/.test(q)){const c=[...ALL].sort((a,b)=>a.p-b.p).slice(0,3);return 'Cheapest: '+c.map(x=>x.n+' ₹'+x.p).join(', ')}
+if(/hi|hello|hey/.test(q))return 'Hello! Ask me about any dish, price or how the app works 😊';
+return 'I can help with prices, dish details, the QR system, payments and contact info. Try “price of biriyani”.'}
+function ask(){const i=$('#q'),v=i.value.trim();if(!v)return;const m=$('#msgs');m.innerHTML+=`<div class="m u">${esc(v)}</div><div class="m a">${esc(reply(v))}</div>`;i.value='';m.scrollTop=m.scrollHeight}
+draw();
+</script></body></html>
